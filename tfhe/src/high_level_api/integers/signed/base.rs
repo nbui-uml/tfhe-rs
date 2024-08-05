@@ -6,7 +6,6 @@ use crate::conformance::ParameterSetConformant;
 use crate::high_level_api::global_state;
 use crate::high_level_api::integers::{FheUint, FheUintId, IntegerId};
 use crate::high_level_api::keys::InternalServerKey;
-use crate::high_level_api::traits::FheEq;
 use crate::integer::client_key::RecomposableSignedInteger;
 use crate::integer::parameters::RadixCiphertextConformanceParams;
 use crate::named::Named;
