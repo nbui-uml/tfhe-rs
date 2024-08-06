@@ -22,6 +22,7 @@ pub(in crate::high_level_api) use unsigned::{
 };
 // These are pub-exported so that their doc can appear in generated rust docs
 use crate::shortint::MessageModulus;
+pub use signed::{Accumulate, FheLinalgScalar, InnerProduct};
 pub use signed::{CompressedFheInt, FheInt};
 pub use unsigned::{CompressedFheUint, FheUint};
 
