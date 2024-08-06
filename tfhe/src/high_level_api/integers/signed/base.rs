@@ -9,14 +9,11 @@ use crate::high_level_api::keys::InternalServerKey;
 use crate::integer::client_key::RecomposableSignedInteger;
 use crate::integer::parameters::RadixCiphertextConformanceParams;
 use crate::named::Named;
-use crate::prelude::{CastFrom, FheTrivialEncrypt};
+use crate::prelude::CastFrom;
 use crate::shortint::ciphertext::NotTrivialCiphertextError;
 use crate::shortint::PBSParameters;
 use crate::{Device, FheBool, ServerKey};
 use std::marker::PhantomData;
-
-extern crate num_traits;
-use num_traits::{One, Zero};
 
 #[cfg(feature = "gpu")]
 use crate::high_level_api::global_state::with_thread_local_cuda_streams;
@@ -597,42 +594,5 @@ where
                 Self::new(inner)
             }),
         })
-    }
-}
-
-impl<Id> Zero for FheInt<Id>
-where
-    FheInt<Id>: FheTrivialEncrypt<i8>,
-    Id: FheIntId,
-{
-    fn zero() -> Self {
-        return FheTrivialEncrypt::encrypt_trivial(0i8);
-    }
-
-    fn set_zero(&mut self) {
-        *self = Self::zero();
-    }
-
-    // This is bad practice
-    fn is_zero(&self) -> bool {
-        return false;
-    }
-}
-
-impl<Id> One for FheInt<Id>
-where
-    FheInt<Id>: FheTrivialEncrypt<i8>,
-    Id: FheIntId,
-{
-    fn one() -> Self {
-        return FheTrivialEncrypt::encrypt_trivial(1i8);
-    }
-
-    fn set_one(&mut self) {
-        *self = Self::one();
-    }
-
-    fn is_one(&self) -> bool {
-        return true;
     }
 }

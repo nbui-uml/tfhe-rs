@@ -7,10 +7,12 @@ mod ops;
 mod overflowing_ops;
 mod scalar_ops;
 mod static_;
+mod ndarray_ops;
 #[cfg(test)]
-mod tests;
+pub mod tests;
 
 pub use base::{FheInt, FheIntId};
+pub use ndarray_ops::*;
 pub use compressed::CompressedFheInt;
 pub(in crate::high_level_api) use compressed::CompressedSignedRadixCiphertext;
 pub(in crate::high_level_api) use inner::RadixCiphertextVersionOwned;

@@ -38,7 +38,7 @@ pub use keys::{
 };
 
 #[cfg(test)]
-mod tests;
+pub mod tests;
 
 pub use crate::high_level_api::booleans::{CompressedFheBool, FheBool, FheBoolConformanceParams};
 expand_pub_use_fhe_type!(

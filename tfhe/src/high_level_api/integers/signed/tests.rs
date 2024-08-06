@@ -1,4 +1,5 @@
 use crate::integer::I256;
+use crate::high_level_api::integers::signed::Accumulate;
 use crate::prelude::*;
 use crate::safe_deserialization::safe_deserialize_conformant;
 use crate::shortint::parameters::PARAM_MESSAGE_2_CARRY_2_KS_PBS;
@@ -7,7 +8,12 @@ use crate::{
     CompressedFheInt16, CompressedFheInt32, Config, ConfigBuilder, FheInt16, FheInt256, FheInt32,
     FheInt32ConformanceParams, FheInt64, FheInt8, FheUint64, FheUint8,
 };
+use env_logger::builder;
+use ndarray::array;
+use num_traits::{Zero, One};
 use rand::prelude::*;
+
+use super::InnerProduct;
 
 #[test]
 fn test_signed_integer_compressed() {
@@ -682,4 +688,100 @@ fn test_safe_deserialize_conformant_compressed_fhe_int32() {
 
     let decrypted: i32 = deserialized_a.decompress().decrypt(&client_key);
     assert_eq!(decrypted, clear_a);
+}
+
+#[test]
+fn test_ndarray_zero_fhe_int16() {
+    let config = ConfigBuilder::default().build();
+    let (client_key, server_key) = generate_keys(config);
+    set_server_key(server_key);
+
+    let enc0 = FheInt16::zero();
+    let dec0: i16 = enc0.decrypt(&client_key);
+    assert_eq!(dec0, 0i16);
+
+    let enct = FheInt16::eq(&enc0, FheInt16::encrypt_trivial(0i16));
+    let encf = FheInt16::eq(&enc0, FheInt16::encrypt_trivial(1i16));
+    let dect = enct.decrypt(&client_key);
+    let decf = encf.decrypt(&client_key);
+    assert_eq!(dect, true);
+    assert_eq!(decf, false);
+
+    let mut enc16 = FheInt16::encrypt(12i16, &client_key);
+    let dec12: i16 = enc16.decrypt(&client_key);
+    assert_eq!(dec12, 12i16);
+
+    enc16.set_zero();
+    let decs0: i16 = enc16.decrypt(&client_key);
+    assert_eq!(decs0, 0i16);
+}
+
+#[test]
+fn test_ndarray_one_fhe_int16() {
+    let config = ConfigBuilder::default().build();
+    let (client_key, server_key) = generate_keys(config);
+    set_server_key(server_key);
+
+    let enc1 = FheInt16::one();
+    let dec1: i16 = enc1.decrypt(&client_key);
+    assert_eq!(dec1, 1i16);
+
+    let enct = FheInt16::eq(&enc1, FheInt16::encrypt_trivial(1i16));
+    let encf = FheInt16::eq(&enc1, FheInt16::encrypt_trivial(0i16));
+    let dect = enct.decrypt(&client_key);
+    let decf = encf.decrypt(&client_key);
+    assert_eq!(dect, true);
+    assert_eq!(decf, false);
+
+    let mut enc16 = FheInt16::encrypt(12i16, &client_key);
+    let dec12: i16 = enc16.decrypt(&client_key);
+    assert_eq!(dec12, 12i16);
+
+    enc16.set_one();
+    let decs1: i16 = enc16.decrypt(&client_key);
+    assert_eq!(decs1, 1i16);
+}
+
+#[test]
+fn test_ndarray_accumulate_fhe_int16() {
+    let config = ConfigBuilder::default().build();
+    let (client_key, server_key) = generate_keys(config);
+    set_server_key(server_key);
+
+    let encarr = array![1i16, 2, 3, 4].mapv(|i| FheInt16::encrypt(i, &client_key));
+    let encs = encarr.accumulate();
+    let decs: i16 = encs.decrypt(&client_key);
+
+    assert_eq!(decs, 10i16);
+}
+
+#[test]
+fn test_ndarray_inner_product_ix1_ix1_fhe_int16() {
+    let config = ConfigBuilder::default().build();
+    let (client_key, server_key) = generate_keys(config);
+    set_server_key(server_key);
+
+    let enc01 = array![0i16, 1].mapv(|i| FheInt16::encrypt(i, &client_key));
+    let enc10 = array![1i16, 0].mapv(|i| FheInt16::encrypt(i, &client_key));
+    let enc0 = enc01.inner_product(&enc10);
+    let enc1 = enc01.inner_product(&enc01);
+    let dec0: i16 = enc0.decrypt(&client_key);
+    let dec1: i16 = enc1.decrypt(&client_key);
+
+    assert_eq!(dec0, 0i16);
+    assert_eq!(dec1, 1i16);
+}
+
+#[test]
+fn test_ndarray_inner_product_ix2_ix1_fhe_int16() {
+    let config = ConfigBuilder::default().build();
+    let (client_key, server_key) = generate_keys(config);
+    set_server_key(server_key);
+
+    let encmat = array![[0i16, 1], [1, 0]].mapv(|i| FheInt16::encrypt(i, &client_key));
+    let encvec = array![1i16, 2].mapv(|i| FheInt16::encrypt(i, &client_key));
+    let encprod = encmat.inner_product(&encvec);
+    let decprod: ndarray::Array1<i16> = encprod.mapv(|i| i.decrypt(&client_key));
+
+    assert_eq!(decprod, array![2i16, 1]);
 }
