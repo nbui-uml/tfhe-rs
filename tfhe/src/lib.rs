@@ -120,7 +120,6 @@ pub(crate) mod high_level_api;
 
 #[cfg(feature = "integer")]
 pub use high_level_api::*;
-pub use high_level_api::{Accumulate, FheLinalgScalar, InnerProduct};
 
 #[cfg(any(test, doctest, feature = "internal-keycache"))]
 /// cbindgen:ignore

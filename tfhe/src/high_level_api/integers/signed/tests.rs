@@ -1,5 +1,5 @@
 use crate::integer::I256;
-use crate::high_level_api::integers::signed::Accumulate;
+use crate::{Accumulate, InnerProduct, OuterProduct};
 use crate::prelude::*;
 use crate::safe_deserialization::safe_deserialize_conformant;
 use crate::shortint::parameters::PARAM_MESSAGE_2_CARRY_2_KS_PBS;
@@ -12,8 +12,6 @@ use env_logger::builder;
 use ndarray::array;
 use num_traits::{Zero, One};
 use rand::prelude::*;
-
-use super::InnerProduct;
 
 #[test]
 fn test_signed_integer_compressed() {
@@ -784,4 +782,18 @@ fn test_ndarray_inner_product_ix2_ix1_fhe_int16() {
     let decprod: ndarray::Array1<i16> = encprod.mapv(|i| i.decrypt(&client_key));
 
     assert_eq!(decprod, array![2i16, 1]);
+}
+
+#[test]
+fn test_ndarray_outer_product_ix1_ix1_fhe_int16() {
+    let config = ConfigBuilder::default().build();
+    let (client_key, server_key) = generate_keys(config);
+    set_server_key(server_key);
+
+    let encv1 = array![1i16, 2, 3].mapv(|i| FheInt16::encrypt(i, &client_key));
+    let encv2 = array![1i16, 2].mapv(|i| FheInt16::encrypt(i, &client_key));
+    let encprod = encv1.outer_product(&encv2);
+    let decprod: ndarray::Array2<i16> = encprod.mapv(|i| i.decrypt(&client_key));
+
+    assert_eq!(decprod, array![[1i16,2],[2,4],[3,6]]);
 }

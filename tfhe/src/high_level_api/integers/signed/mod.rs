@@ -15,7 +15,7 @@ pub use base::{FheInt, FheIntId};
 pub use compressed::CompressedFheInt;
 pub(in crate::high_level_api) use compressed::CompressedSignedRadixCiphertext;
 pub(in crate::high_level_api) use inner::RadixCiphertextVersionOwned;
-pub use ndarray_ops::{Accumulate, FheLinalgScalar, InnerProduct};
+pub use ndarray_ops::{Accumulate, FheLinalgScalar, InnerProduct, OuterProduct};
 
 expand_pub_use_fhe_type!(
     pub use static_{

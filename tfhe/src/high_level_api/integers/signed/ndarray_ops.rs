@@ -6,7 +6,7 @@ use std::ops::*;
 extern crate num_traits;
 use num_traits::{One, Zero};
 extern crate ndarray;
-use ndarray::{Array1, ArrayBase, Axis, Data};
+use ndarray::{Array1, Array2, ArrayBase, Axis, Data};
 use ndarray::{Ix1, Ix2};
 
 impl<Id> Zero for FheInt<Id>
@@ -136,3 +136,23 @@ where
 //         return prod;
 //     }
 // }
+
+pub trait OuterProduct<RHS> {
+    type Output;
+    fn outer_product(&self, rhs: &RHS) -> Self::Output;
+}
+
+impl<A, S, S2> OuterProduct<ArrayBase<S2, Ix1>> for ArrayBase<S, Ix1>
+where
+    S: Data<Elem = A>,
+    S2: Data<Elem = A>,
+    A: FheLinalgScalar,
+{
+    type Output = Array2<A>;
+    fn outer_product(&self, rhs: &ArrayBase<S2, Ix1>) -> Self::Output {
+        let lhs = self.to_shape((1, self.dim())).unwrap().to_owned();
+        let out = ndarray::concatenate(Axis(0), &vec![lhs.view(); rhs.dim()]).unwrap();
+
+        return &out.t() * rhs;
+    }
+}
