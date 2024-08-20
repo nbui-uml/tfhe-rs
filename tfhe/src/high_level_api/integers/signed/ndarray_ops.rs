@@ -2,6 +2,7 @@ use crate::high_level_api::integers::FheIntId;
 use crate::prelude::*;
 use crate::FheInt;
 use std::ops::*;
+use std::borrow::Borrow;
 
 extern crate num_traits;
 use num_traits::{One, Zero};
@@ -51,12 +52,13 @@ pub trait FheLinalgScalar:
     + Sized
     + Clone
     + Add<Output = Self>
-    + AddAssign
+    + for <'a> AddAssign<&'a Self>
     + Sub<Output = Self>
     + Mul<Output = Self>
     + Div<Output = Self>
     + Zero
     + One
+    + Borrow<Self>
 {
 }
 impl<Id> FheLinalgScalar for FheInt<Id> where Id: FheIntId {}
@@ -74,7 +76,9 @@ where
     type Output = A;
     fn accumulate(&self) -> Self::Output {
         let mut sum = A::zero();
-        self.mapv(|i| sum += i);
+        for i in self {
+            sum += i;
+        }
         return sum;
     }
 }
